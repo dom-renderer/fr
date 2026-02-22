@@ -304,12 +304,7 @@ class StoreController extends Controller
         $limit = 10;
         $getAll = $request->getall;
     
-        if ($request->has('assetswloc') && $request->assetswloc == 1) {
-            $query = Store::withoutGlobalScope('os');
-        } else {
-            $query = Store::query();
-        }
-        
+        $query = Store::query();
     
         if (!empty($queryString)) {
             $query->where('name', 'LIKE', "%{$queryString}%")

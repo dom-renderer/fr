@@ -14,7 +14,6 @@ class TaxSlab extends Model
         'name',
         'cgst',
         'sgst',
-        'igst',
         'status'
     ];
 }

@@ -65,22 +65,19 @@
                         @if(auth()->user()->can('order-categories.index'))
                             <li class="nav-item"><a href="{{ route('order-categories.index') }}" class="nav-link"> Categories </a></li>
                         @endif
+
                         @if(auth()->user()->can('order-units.index'))
                             <li class="nav-item"><a href="{{ route('order-units.index') }}" class="nav-link"> Units </a></li>
                         @endif
+
                         @if(auth()->user()->can('order-products.index'))
                             <li class="nav-item"><a href="{{ route('order-products.index') }}" class="nav-link"> Products </a></li>
                         @endif
+
+                        @if(auth()->user()->can('pricing-tiers.index'))
                         <li class="nav-item"><a href="{{ route('pricing-tiers.index') }}" class="nav-link"> Pricing Tiers </a></li>
+                        @endif
                         
-                        @if(auth()->user()->can('packaging-materials.index'))
-                            <li class="nav-item"><a href="{{ route('packaging-materials.index') }}" class="nav-link"> Packaging Materials </a></li>
-                        @endif
-
-                        @if(auth()->user()->can('services.index'))
-                            <li class="nav-item"><a href="{{ route('services.index') }}" class="nav-link"> Services </a></li>
-                        @endif
-
                         @if(auth()->user()->can('other-items.index'))
                             <li class="nav-item"><a href="{{ route('other-items.index') }}" class="nav-link"> Other Items </a></li>
                         @endif
@@ -88,12 +85,15 @@
                         @if(auth()->user()->can('bulk-price-management.index'))
                             <li class="nav-item"><a href="{{ route('bulk-price-management.index') }}" class="nav-link"> Bulk Price Management </a></li>
                         @endif
+
                         @if(auth()->user()->can('orders.index'))
                             <li class="nav-item"><a href="{{ route('orders.index') }}" class="nav-link"> Orders </a></li>
                         @endif
+
                         @if(auth()->user()->can('utencil-report.index'))
                             <li class="nav-item"><a href="{{ route('utencil-report.index') }}" class="nav-link"> Utencil Report </a></li>
                         @endif
+
                         @if(auth()->user()->can('handling-instructions.index'))
                             <li class="nav-item"><a href="{{ route('handling-instructions.index') }}" class="nav-link"> Handling Instruction </a></li>
                         @endif

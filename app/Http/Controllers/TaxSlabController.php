@@ -48,9 +48,9 @@ class TaxSlabController extends Controller
             ->editColumn('sgst', function($row){
                 return $row->sgst . '%';
             })
-            ->editColumn('igst', function($row){
-                return $row->igst . '%';
-            })
+            // ->editColumn('igst', function($row){
+            //     return $row->igst . '%';
+            // })
             ->addIndexColumn()
             ->rawColumns(['action', 'status'])
             ->make(true);
@@ -69,7 +69,7 @@ class TaxSlabController extends Controller
             'name' => 'required|unique:tax_slabs,name,NULL,id,deleted_at,NULL',
             'cgst' => 'required|numeric|min:0|max:100',
             'sgst' => 'required|numeric|min:0|max:100',
-            'igst' => 'required|numeric|min:0|max:100',
+            // 'igst' => 'required|numeric|min:0|max:100',
             'status' => 'required|boolean'
         ]);
 
@@ -82,7 +82,7 @@ class TaxSlabController extends Controller
                 'name' => $request->name,
                 'cgst' => $request->cgst,
                 'sgst' => $request->sgst,
-                'igst' => $request->igst,
+                'igst' => 0,
                 'status' => boolval($request->status)
             ]);
 
@@ -124,7 +124,7 @@ class TaxSlabController extends Controller
             'name' => 'required|unique:tax_slabs,name,'.$id.',id,deleted_at,NULL',
             'cgst' => 'required|numeric|min:0|max:100',
             'sgst' => 'required|numeric|min:0|max:100',
-            'igst' => 'required|numeric|min:0|max:100',
+            // 'igst' => 'required|numeric|min:0|max:100',
             'status' => 'required|boolean'
         ]);
 
@@ -142,7 +142,7 @@ class TaxSlabController extends Controller
                 'name' => $request->name,
                 'cgst' => $request->cgst,
                 'sgst' => $request->sgst,
-                'igst' => $request->igst,
+                'igst' => 0,
                 'status' => boolval($request->status)
             ]);
 

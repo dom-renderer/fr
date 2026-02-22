@@ -28,7 +28,7 @@
                     <th scope="col">Name</th>
                     <th scope="col">CGST</th>
                     <th scope="col">SGST</th>
-                    <th scope="col">IGST</th>
+                    {{-- <th scope="col">IGST</th> --}}
                     <th scope="col">Status</th>
                     <th scope="col" width="150px">Action</th>
                 </tr>
@@ -65,7 +65,7 @@
             {data: 'name', name: 'name'},
             {data: 'cgst', name: 'cgst'},
             {data: 'sgst', name: 'sgst'},
-            {data: 'igst', name: 'igst'},
+            // {data: 'igst', name: 'igst'},
             {data: 'status', name: 'status'},
             {data: 'action', name: 'action', orderable: false, searchable: false},
         ]

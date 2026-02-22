@@ -135,8 +135,6 @@ class OrderController extends Controller
         $handlingInstructions = HandlingInstruction::orderBy('name')->pluck('name', 'id');
         $vehicles = Vehicle::orderBy('name')->get();
 
-        $services = \App\Models\Service::where('status', 1)->orderBy('name')->pluck('name', 'id');
-        $packagingMaterials = \App\Models\PackagingMaterial::where('status', 1)->orderBy('name')->pluck('name', 'id');
         $otherItems = \App\Models\OtherItem::where('status', 1)->orderBy('name')->pluck('name', 'id');
         $taxSlabs = \App\Models\TaxSlab::where('status', 1)->get();
 
@@ -155,8 +153,6 @@ class OrderController extends Controller
             'handlingInstructions',
             'drivers',
             'vehicles',
-            'services',
-            'packagingMaterials',
             'otherItems',
             'taxSlabs'
         ));
@@ -168,11 +164,7 @@ class OrderController extends Controller
         $id = $request->id;
 
         $item = null;
-        if ($type == 'service') {
-            $item = \App\Models\Service::with('taxSlab')->find($id);
-        } elseif ($type == 'packaging_material') {
-            $item = \App\Models\PackagingMaterial::with('taxSlab')->find($id);
-        } elseif ($type == 'other_item') {
+        if ($type == 'other_item') {
             $item = \App\Models\OtherItem::with('taxSlab')->find($id);
         }
 
@@ -248,16 +240,6 @@ class OrderController extends Controller
             'handling_instructions' => 'nullable|array',
             'handling_instructions.*' => 'exists:handling_instructions,id',
             'handling_note' => 'nullable|string',
-            'services' => 'nullable|array',
-            'services.*.service_id' => 'required_with:services|exists:services,id',
-            'services.*.quantity' => 'required_with:services|numeric|min:0.01',
-            'services.*.unit_price' => 'required_with:services|numeric|min:0',
-            'services.*.tax_slab_id' => 'nullable|exists:tax_slabs,id',
-            'packaging_materials' => 'nullable|array',
-            'packaging_materials.*.packaging_material_id' => 'required_with:packaging_materials|exists:packaging_materials,id',
-            'packaging_materials.*.quantity' => 'required_with:packaging_materials|numeric|min:0.01',
-            'packaging_materials.*.unit_price' => 'required_with:packaging_materials|numeric|min:0',
-            'packaging_materials.*.tax_slab_id' => 'nullable|exists:tax_slabs,id',
             'other_items' => 'nullable|array',
             'other_items.*.other_item_id' => 'required_with:other_items|exists:other_items,id',
             'other_items.*.quantity' => 'required_with:other_items|numeric|min:0.01',
@@ -324,7 +306,6 @@ class OrderController extends Controller
             $cgstAmount = $subtotal2 * ($cgstPercent / 100);
             $sgstAmount = $subtotal2 * ($sgstPercent / 100);
 
-            // Calculate totals for Services, Packaging Materials, and Other Items
             $processNonProductItem = function ($item) use (&$subtotal, &$subtotal2, &$cgstAmount, &$sgstAmount) {
                 $qty = floatval($item['quantity'] ?? 0);
                 $enteredPrice = floatval($item['unit_price'] ?? 0);
@@ -373,20 +354,6 @@ class OrderController extends Controller
                 return $amt;
             };
 
-            if ($request->has('services') && is_array($request->services)) {
-                foreach ($request->services as $srv) {
-                    if (empty($srv['service_id']))
-                        continue;
-                    $processNonProductItem($srv);
-                }
-            }
-            if ($request->has('packaging_materials') && is_array($request->packaging_materials)) {
-                foreach ($request->packaging_materials as $pm) {
-                    if (empty($pm['packaging_material_id']))
-                        continue;
-                    $processNonProductItem($pm);
-                }
-            }
             if ($request->has('other_items') && is_array($request->other_items)) {
                 foreach ($request->other_items as $oi) {
                     if (empty($oi['other_item_id']))
@@ -579,48 +546,6 @@ class OrderController extends Controller
                 }
             }
 
-            // Services
-            if ($request->has('services') && is_array($request->services)) {
-                foreach ($request->services as $srv) {
-                    if (empty($srv['service_id']))
-                        continue;
-
-                    \App\Models\OrderService::create([
-                        'order_id' => $order->id,
-                        'service_id' => $srv['service_id'],
-                        'quantity' => $srv['quantity'],
-                        'unit_price' => $srv['unit_price'],
-                        'subtotal' => floatval($srv['unit_price']) * floatval($srv['quantity']),
-                        'ge_price' => 0,
-                        'gi_price' => 0,
-                        'price_includes_tax' => isset($srv['price_includes_tax']) ? (int) $srv['price_includes_tax'] : 0,
-                        'pricing_type' => $srv['pricing_type'] ?? 'fixed',
-                        'tax_slab_id' => $srv['tax_slab_id'] ?? null,
-                    ]);
-                }
-            }
-
-            // Packaging Materials
-            if ($request->has('packaging_materials') && is_array($request->packaging_materials)) {
-                foreach ($request->packaging_materials as $pm) {
-                    if (empty($pm['packaging_material_id']))
-                        continue;
-
-                    \App\Models\OrderPackagingMaterial::create([
-                        'order_id' => $order->id,
-                        'packaging_material_id' => $pm['packaging_material_id'],
-                        'quantity' => $pm['quantity'],
-                        'unit_price' => $pm['unit_price'],
-                        'subtotal' => floatval($pm['unit_price']) * floatval($pm['quantity']),
-                        'ge_price' => 0,
-                        'gi_price' => 0,
-                        'price_includes_tax' => isset($pm['price_includes_tax']) ? (int) $pm['price_includes_tax'] : 0,
-                        'pricing_type' => $pm['pricing_type'] ?? 'fixed',
-                        'tax_slab_id' => $pm['tax_slab_id'] ?? null,
-                    ]);
-                }
-            }
-
             // Other Items
             if ($request->has('other_items') && is_array($request->other_items)) {
                 foreach ($request->other_items as $oi) {
@@ -688,13 +613,9 @@ class OrderController extends Controller
             'paymentLogs.user',
             'vehicle',
             'charges',
-            'services',
-            'packagingMaterials',
             'otherItems',
             'utencils.utencil',
             'utencilHistories',
-            'services.service.taxSlab',
-            'packagingMaterials.packagingMaterial.taxSlab',
             'otherItems.otherItem.taxSlab',
         ])->findOrFail($id);
 
@@ -786,9 +707,6 @@ class OrderController extends Controller
                 'received' => (float) $s->received,
             ];
         });
-
-        $services = \App\Models\Service::with('taxSlab')->where('status', 1)->orderBy('name')->get();
-        $packagingMaterials = \App\Models\PackagingMaterial::with('taxSlab')->where('status', 1)->orderBy('name')->get();
         $otherItems = \App\Models\OtherItem::with('taxSlab')->where('status', 1)->orderBy('name')->get();
         $taxSlabs = \App\Models\TaxSlab::where('status', 1)->get();
 
@@ -813,8 +731,6 @@ class OrderController extends Controller
             'vehicles',
             'utencilSummaries',
             'utencilSummariesArr',
-            'services',
-            'packagingMaterials',
             'otherItems',
             'taxSlabs'
         ));
@@ -825,8 +741,6 @@ class OrderController extends Controller
         $order = Order::with([
             'items.product.category',
             'items.unit',
-            'services.service.taxSlab',
-            'packagingMaterials.packagingMaterial.taxSlab',
             'otherItems.otherItem.taxSlab',
             'utencils.utencil',
             'charges',
@@ -848,8 +762,6 @@ class OrderController extends Controller
         $cgstPercentage = $setting->cgst_percentage ?? 0;
         $sgstPercentage = $setting->sgst_percentage ?? 0;
 
-        $services = \App\Models\Service::with('taxSlab')->where('status', 1)->orderBy('name')->get();
-        $packagingMaterials = \App\Models\PackagingMaterial::with('taxSlab')->where('status', 1)->orderBy('name')->get();
         $otherItems = \App\Models\OtherItem::with('taxSlab')->where('status', 1)->orderBy('name')->get();
         $taxSlabs = \App\Models\TaxSlab::where('status', 1)->get();
 
@@ -869,8 +781,6 @@ class OrderController extends Controller
             'sgstPercentage',
             'utencils',
             'vehicles',
-            'services',
-            'packagingMaterials',
             'otherItems',
             'taxSlabs'
         ));
@@ -925,16 +835,7 @@ class OrderController extends Controller
             $rules['receiver_store_id'] = 'required|exists:stores,id|different:sender_store_id';
         }
 
-        // New Sections Validation
-        $rules['services'] = 'nullable|array';
-        $rules['services.*.service_id'] = 'required_with:services|exists:services,id';
-        $rules['services.*.quantity'] = 'required_with:services|numeric|min:0.01';
-        $rules['services.*.unit_price'] = 'required_with:services|numeric|min:0';
 
-        $rules['packaging_materials'] = 'nullable|array';
-        $rules['packaging_materials.*.packaging_material_id'] = 'required_with:packaging_materials|exists:packaging_materials,id';
-        $rules['packaging_materials.*.quantity'] = 'required_with:packaging_materials|numeric|min:0.01';
-        $rules['packaging_materials.*.unit_price'] = 'required_with:packaging_materials|numeric|min:0';
 
         $rules['other_items'] = 'nullable|array';
         $rules['other_items.*.other_item_id'] = 'required_with:other_items|exists:other_items,id';
@@ -967,25 +868,6 @@ class OrderController extends Controller
             $cgstAmount = $subtotal2 * ($cgstPercent / 100);
             $sgstAmount = $subtotal2 * ($sgstPercent / 100);
 
-            // Calculate totals for Services, Packaging Materials, and Other Items
-            if ($request->has('services') && is_array($request->services)) {
-                foreach ($request->services as $srv) {
-                    if (empty($srv['service_id']))
-                        continue;
-                    $amt = floatval($srv['unit_price']) * floatval($srv['quantity']);
-                    $subtotal += $amt;
-                    $subtotal2 += $amt;
-                }
-            }
-            if ($request->has('packaging_materials') && is_array($request->packaging_materials)) {
-                foreach ($request->packaging_materials as $pm) {
-                    if (empty($pm['packaging_material_id']))
-                        continue;
-                    $amt = floatval($pm['unit_price']) * floatval($pm['quantity']);
-                    $subtotal += $amt;
-                    $subtotal2 += $amt;
-                }
-            }
             if ($request->has('other_items') && is_array($request->other_items)) {
                 foreach ($request->other_items as $oi) {
                     if (empty($oi['other_item_id']))
@@ -1102,44 +984,6 @@ class OrderController extends Controller
                     'gi_price' => $item['gi_price'] ?? 0,
                     'subtotal' => floatval($item['unit_price']) * floatval($item['quantity']),
                 ]);
-            }
-
-            // Update Services
-            \App\Models\OrderService::where('order_id', $order->id)->forceDelete();
-            if ($request->has('services') && is_array($request->services)) {
-                foreach ($request->services as $srv) {
-                    if (empty($srv['service_id']))
-                        continue;
-                    \App\Models\OrderService::create([
-                        'order_id' => $order->id,
-                        'service_id' => $srv['service_id'],
-                        'quantity' => $srv['quantity'],
-                        'unit_price' => $srv['unit_price'],
-                        'subtotal' => floatval($srv['unit_price']) * floatval($srv['quantity']),
-                        'price_includes_tax' => isset($srv['price_includes_tax']) ? (int) $srv['price_includes_tax'] : 0,
-                        'pricing_type' => $srv['pricing_type'] ?? 'fixed',
-                        'tax_slab_id' => $srv['tax_slab_id'] ?? null,
-                    ]);
-                }
-            }
-
-            // Update Packaging Materials
-            \App\Models\OrderPackagingMaterial::where('order_id', $order->id)->forceDelete();
-            if ($request->has('packaging_materials') && is_array($request->packaging_materials)) {
-                foreach ($request->packaging_materials as $pm) {
-                    if (empty($pm['packaging_material_id']))
-                        continue;
-                    \App\Models\OrderPackagingMaterial::create([
-                        'order_id' => $order->id,
-                        'packaging_material_id' => $pm['packaging_material_id'],
-                        'quantity' => $pm['quantity'],
-                        'unit_price' => $pm['unit_price'],
-                        'subtotal' => floatval($pm['unit_price']) * floatval($pm['quantity']),
-                        'price_includes_tax' => isset($pm['price_includes_tax']) ? (int) $pm['price_includes_tax'] : 0,
-                        'pricing_type' => $pm['pricing_type'] ?? 'fixed',
-                        'tax_slab_id' => $pm['tax_slab_id'] ?? null,
-                    ]);
-                }
             }
 
             // Update Other Items
@@ -1449,14 +1293,12 @@ class OrderController extends Controller
             'bill2',
             'deliveryUser',
             'charges',
-            'services.service.taxSlab',
-            'packagingMaterials.packagingMaterial.taxSlab',
             'otherItems.otherItem.taxSlab'
         ])->findOrFail($id);
 
         $billTo = null;
         if ($order->bill_to_type == 'store' || $order->bill_to_type == 'factory') {
-            $billTo = Store::withoutGlobalScopes()->find($order->bill_to_id);
+            $billTo = Store::find($order->bill_to_id);
         } elseif ($order->bill_to_type == 'user') {
             $billTo = User::find($order->bill_to_id);
         }
@@ -1476,14 +1318,12 @@ class OrderController extends Controller
             'bill2',
             'deliveryUser',
             'charges',
-            'services.service.taxSlab',
-            'packagingMaterials.packagingMaterial.taxSlab',
             'otherItems.otherItem.taxSlab'
         ])->findOrFail($id);
 
         $billTo = null;
         if ($order->bill_to_type == 'store' || $order->bill_to_type == 'factory') {
-            $billTo = Store::withoutGlobalScopes()->find($order->bill_to_id);
+            $billTo = Store::find($order->bill_to_id);
         } elseif ($order->bill_to_type == 'user') {
             $billTo = User::find($order->bill_to_id);
         }
@@ -1633,7 +1473,7 @@ class OrderController extends Controller
 
     public function getStoreDetails($id)
     {
-        $store = Store::withoutGlobalScopes()->find($id);
+        $store = Store::find($id);
         if (!$store) {
             return response()->json(['status' => false, 'message' => 'Store not found']);
         }
@@ -1816,20 +1656,6 @@ class OrderController extends Controller
             'handling_instructions.*' => 'exists:handling_instructions,id',
             'handling_note' => 'nullable|string',
 
-            // Services
-            'services' => 'nullable|array',
-            'services.*.service_id' => 'required_with:services|exists:services,id',
-            'services.*.quantity' => 'required_with:services|numeric|min:0.01',
-            'services.*.unit_price' => 'required_with:services|numeric|min:0',
-            'services.*.tax_slab_id' => 'nullable|exists:tax_slabs,id',
-
-            // Packaging materials
-            'packaging_materials' => 'nullable|array',
-            'packaging_materials.*.packaging_material_id' => 'required_with:packaging_materials|exists:packaging_materials,id',
-            'packaging_materials.*.quantity' => 'required_with:packaging_materials|numeric|min:0.01',
-            'packaging_materials.*.unit_price' => 'required_with:packaging_materials|numeric|min:0',
-            'packaging_materials.*.tax_slab_id' => 'nullable|exists:tax_slabs,id',
-
             // Other items
             'other_items' => 'nullable|array',
             'other_items.*.other_item_id' => 'required_with:other_items|exists:other_items,id',
@@ -1895,7 +1721,6 @@ class OrderController extends Controller
             $cgstAmount = $subtotal2 * ($cgstPercent / 100);
             $sgstAmount = $subtotal2 * ($sgstPercent / 100);
 
-            // --- Closure: process tax for services/packaging/other items ---
             $processNonProductItem = function (array $item) use (&$subtotal, &$subtotal2, &$cgstAmount, &$sgstAmount) {
                 $qty = floatval($item['quantity'] ?? 0);
                 $enteredPrice = floatval($item['unit_price'] ?? 0);
@@ -1935,23 +1760,6 @@ class OrderController extends Controller
 
                 return $lineBase;
             };
-
-            // --- Process non-product line items ---
-            if ($request->has('services') && is_array($request->services)) {
-                foreach ($request->services as $srv) {
-                    if (!empty($srv['service_id'])) {
-                        $processNonProductItem($srv);
-                    }
-                }
-            }
-
-            if ($request->has('packaging_materials') && is_array($request->packaging_materials)) {
-                foreach ($request->packaging_materials as $pm) {
-                    if (!empty($pm['packaging_material_id'])) {
-                        $processNonProductItem($pm);
-                    }
-                }
-            }
 
             if ($request->has('other_items') && is_array($request->other_items)) {
                 foreach ($request->other_items as $oi) {
@@ -2126,52 +1934,6 @@ class OrderController extends Controller
                         'quantity' => $qty,
                         'type' => OrderUtencilHistory::TYPE_SENT,
                         'note' => $orderUtencil->note,
-                    ]);
-                }
-            }
-
-            // -----------------------------------------------------------------------
-            // Persist: Services
-            // -----------------------------------------------------------------------
-            if ($request->has('services') && is_array($request->services)) {
-                foreach ($request->services as $srv) {
-                    if (empty($srv['service_id']))
-                        continue;
-
-                    \App\Models\OrderService::create([
-                        'order_id' => $order->id,
-                        'service_id' => $srv['service_id'],
-                        'quantity' => $srv['quantity'],
-                        'unit_price' => $srv['unit_price'],
-                        'subtotal' => floatval($srv['unit_price']) * floatval($srv['quantity']),
-                        'ge_price' => 0,
-                        'gi_price' => 0,
-                        'price_includes_tax' => isset($srv['price_includes_tax']) ? (int) $srv['price_includes_tax'] : 0,
-                        'pricing_type' => $srv['pricing_type'] ?? 'fixed',
-                        'tax_slab_id' => $srv['tax_slab_id'] ?? null,
-                    ]);
-                }
-            }
-
-            // -----------------------------------------------------------------------
-            // Persist: Packaging Materials
-            // -----------------------------------------------------------------------
-            if ($request->has('packaging_materials') && is_array($request->packaging_materials)) {
-                foreach ($request->packaging_materials as $pm) {
-                    if (empty($pm['packaging_material_id']))
-                        continue;
-
-                    \App\Models\OrderPackagingMaterial::create([
-                        'order_id' => $order->id,
-                        'packaging_material_id' => $pm['packaging_material_id'],
-                        'quantity' => $pm['quantity'],
-                        'unit_price' => $pm['unit_price'],
-                        'subtotal' => floatval($pm['unit_price']) * floatval($pm['quantity']),
-                        'ge_price' => 0,
-                        'gi_price' => 0,
-                        'price_includes_tax' => isset($pm['price_includes_tax']) ? (int) $pm['price_includes_tax'] : 0,
-                        'pricing_type' => $pm['pricing_type'] ?? 'fixed',
-                        'tax_slab_id' => $pm['tax_slab_id'] ?? null,
                     ]);
                 }
             }

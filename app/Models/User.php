@@ -65,6 +65,13 @@ class User extends Authenticatable
         return in_array('Admin', auth()->user()->getRoleNames()->toArray());
     }
 
+    public function stores()
+    {
+        return $this->belongsToMany(Store::class, 'user_stores', 'user_id', 'store_id')
+                    ->whereNull('user_stores.deleted_at');
+    }
+    
+
     public function locations() {
         return $this->hasMany(UserStore::class, 'user_id');
     }

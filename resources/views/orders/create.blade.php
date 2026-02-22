@@ -15,8 +15,6 @@
         }
 
         .items-table th,
-        .services-table th,
-        .packaging-materials-table th,
         .other-items-table th {
             background: #f1f5f9;
             font-size: 0.75rem;
@@ -622,70 +620,6 @@
                         </div>
                     </div>
 
-                    {{-- Services Card --}}
-                    <div class="card border-0 shadow-sm mt-3">
-                        <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
-                            <h6 class="mb-0"><i class="fas fa-concierge-bell me-2 text-primary"></i>Services</h6>
-                            <button type="button" class="btn btn-primary btn-sm" id="addServiceRow">
-                                <i class="fas fa-plus me-1"></i> Add Service
-                            </button>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="table-responsive">
-                                <table class="table services-table mb-0">
-                                    <thead>
-                                        <tr>
-                                            <th style="width: 25%">Service</th>
-                                            <th style="width: 15%">Tax Slab</th>
-                                            <th class="text-center" style="width: 10%">Price Incl. Tax</th>
-                                            <th style="width: 12%">Price</th>
-                                            <th style="width: 10%">Qty</th>
-                                            <th style="width: 18%">Total</th>
-                                            <th class="text-center" style="width: 10%">Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="servicesTableBody"></tbody>
-                                </table>
-                            </div>
-                            <div id="noServicesMessage" class="text-center text-muted py-4">
-                                <i class="fas fa-inbox fa-2x mb-2 opacity-50"></i><br>
-                                Click "Add Service" to add services.
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Packaging Materials Section -->
-                    <div class="card border-0 shadow-sm mt-3">
-                        <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
-                            <h6 class="mb-0"><i class="fas fa-box-open me-2 text-primary"></i>Packaging Materials</h6>
-                            <button type="button" class="btn btn-primary btn-sm" id="addPackagingMaterialRow">
-                                <i class="fas fa-plus me-1"></i> Add Material
-                            </button>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="table-responsive">
-                                <table class="table packaging-materials-table mb-0">
-                                    <thead>
-                                        <tr>
-                                            <th style="width: 25%">Material</th>
-                                            <th style="width: 15%">Tax Slab</th>
-                                            <th class="text-center" style="width: 10%">Price Incl. Tax</th>
-                                            <th style="width: 12%">Price</th>
-                                            <th style="width: 10%">Qty</th>
-                                            <th style="width: 18%">Total</th>
-                                            <th class="text-center" style="width: 10%">Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="packagingMaterialsTableBody"></tbody>
-                                </table>
-                            </div>
-                            <div id="noPackagingMaterialsMessage" class="text-center text-muted py-4">
-                                <i class="fas fa-inbox fa-2x mb-2 opacity-50"></i><br>
-                                Click "Add Material" to add packaging materials.
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- Other Items Section -->
                     <div class="card border-0 shadow-sm mt-3">
                         <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
@@ -856,91 +790,6 @@
             </div>
         </div>
     </div>
-
-    <template id="serviceRowTemplate">
-        <tr class="service-row" data-row-index="__INDEX__" data-pricing-type="fixed">
-            <td>
-                <select class="form-control form-control-sm service-select" name="services[__INDEX__][service_id]"
-                    required>
-                    <option value="">Select Service</option>
-                    @foreach ($services as $id => $name)
-                        <option value="{{ $id }}">{{ $name }}</option>
-                    @endforeach
-                </select>
-                <input type="hidden" class="pricing-type-input" name="services[__INDEX__][pricing_type]"
-                    value="fixed">
-            </td>
-            <td>
-                <select class="form-control form-control-sm tax-slab-select" name="services[__INDEX__][tax_slab_id]">
-                    <option value="" data-cgst="0" data-sgst="0">None</option>
-                    @foreach ($taxSlabs as $slab)
-                        <option value="{{ $slab->id }}" data-cgst="{{ $slab->cgst }}"
-                            data-sgst="{{ $slab->sgst }}">
-                            {{ $slab->name }}</option>
-                    @endforeach
-                </select>
-            </td>
-            <td class="text-center">
-                <input type="hidden" name="services[__INDEX__][price_includes_tax]" value="0">
-                <input type="checkbox" class="form-check-input price-includes-tax-checkbox"
-                    name="services[__INDEX__][price_includes_tax]" value="1">
-            </td>
-            <td>
-                <input type="number" step="0.01" min="0" class="form-control form-control-sm price-input"
-                    name="services[__INDEX__][unit_price]" placeholder="0.00" required>
-            </td>
-            <td>
-                <input type="number" step="0.01" min="0.01" class="form-control form-control-sm qty-input"
-                    name="services[__INDEX__][quantity]" placeholder="1" required>
-            </td>
-            <td><strong class="row-total">{{ Helper::defaultCurrencySymbol() }}0.00</strong></td>
-            <td class="text-center"><span class="btn-remove-row" title="Remove"><i
-                        class="fas fa-times-circle fa-lg"></i></span></td>
-        </tr>
-    </template>
-
-    <template id="packagingMaterialRowTemplate">
-        <tr class="packaging-material-row" data-row-index="__INDEX__" data-pricing-type="fixed">
-            <td>
-                <select class="form-control form-control-sm packaging-material-select"
-                    name="packaging_materials[__INDEX__][packaging_material_id]" required>
-                    <option value="">Select Material</option>
-                    @foreach ($packagingMaterials as $id => $name)
-                        <option value="{{ $id }}">{{ $name }}</option>
-                    @endforeach
-                </select>
-                <input type="hidden" class="pricing-type-input" name="packaging_materials[__INDEX__][pricing_type]"
-                    value="fixed">
-            </td>
-            <td>
-                <select class="form-control form-control-sm tax-slab-select"
-                    name="packaging_materials[__INDEX__][tax_slab_id]">
-                    <option value="" data-cgst="0" data-sgst="0">None</option>
-                    @foreach ($taxSlabs as $slab)
-                        <option value="{{ $slab->id }}" data-cgst="{{ $slab->cgst }}"
-                            data-sgst="{{ $slab->sgst }}">
-                            {{ $slab->name }}</option>
-                    @endforeach
-                </select>
-            </td>
-            <td class="text-center">
-                <input type="hidden" name="packaging_materials[__INDEX__][price_includes_tax]" value="0">
-                <input type="checkbox" class="form-check-input price-includes-tax-checkbox"
-                    name="packaging_materials[__INDEX__][price_includes_tax]" value="1">
-            </td>
-            <td>
-                <input type="number" step="0.01" min="0" class="form-control form-control-sm price-input"
-                    name="packaging_materials[__INDEX__][unit_price]" placeholder="0.00" required>
-            </td>
-            <td>
-                <input type="number" step="0.01" min="0.01" class="form-control form-control-sm qty-input"
-                    name="packaging_materials[__INDEX__][quantity]" placeholder="1" required>
-            </td>
-            <td><strong class="row-total">{{ Helper::defaultCurrencySymbol() }}0.00</strong></td>
-            <td class="text-center"><span class="btn-remove-row" title="Remove"><i
-                        class="fas fa-times-circle fa-lg"></i></span></td>
-        </tr>
-    </template>
 
     <template id="otherItemRowTemplate">
         <tr class="other-item-row" data-row-index="__INDEX__" data-pricing-type="fixed">
@@ -1228,33 +1077,6 @@
                 updateSummary();
             });
 
-            // --- Services ---
-            $('#addServiceRow').on('click', function() {
-                const template = $('#serviceRowTemplate').html().replace(/__INDEX__/g, rowIndex++);
-                $('#servicesTableBody').append(template);
-                $('#noServicesMessage').hide();
-                // init select2
-                $(`tr[data-row-index="${rowIndex - 1}"]`).find('.service-select, .tax-slab-select')
-            .select2({
-                    placeholder: 'Select',
-                    width: '100%'
-                });
-            });
-
-            // --- Packaging Materials ---
-            $('#addPackagingMaterialRow').on('click', function() {
-                const template = $('#packagingMaterialRowTemplate').html().replace(/__INDEX__/g,
-                rowIndex++);
-                $('#packagingMaterialsTableBody').append(template);
-                $('#noPackagingMaterialsMessage').hide();
-                // init select2
-                $(`tr[data-row-index="${rowIndex - 1}"]`).find(
-                    '.packaging-material-select, .tax-slab-select').select2({
-                    placeholder: 'Select',
-                    width: '100%'
-                });
-            });
-
             // --- Other Items ---
             $('#addOtherItemRow').on('click', function() {
                 const template = $('#otherItemRowTemplate').html().replace(/__INDEX__/g, rowIndex++);
@@ -1271,8 +1093,6 @@
             $(document).on('click', '.btn-remove-row', function() {
                 const $row = $(this).closest('tr');
                 const $tbody = $row.closest('tbody');
-                const isService = $tbody.attr('id') === 'servicesTableBody';
-                const isPM = $tbody.attr('id') === 'packagingMaterialsTableBody';
                 const isOther = $tbody.attr('id') === 'otherItemsTableBody';
                 const isItem = $tbody.attr('id') === 'itemsTableBody';
 
@@ -1289,10 +1109,6 @@
                         $row.remove();
                         if (isItem && $('#itemsTableBody tr').length === 0) $('#noItemsMessage')
                             .show();
-                        if (isService && $('#servicesTableBody tr').length === 0) $(
-                            '#noServicesMessage').show();
-                        if (isPM && $('#packagingMaterialsTableBody tr').length === 0) $(
-                            '#noPackagingMaterialsMessage').show();
                         if (isOther && $('#otherItemsTableBody tr').length === 0) $(
                             '#noOtherItemsMessage').show();
                         updateSummary();
@@ -1469,10 +1285,7 @@
                         metaText = `${categoryText} &bull; ${unitText}`;
                         if (!productText && !categoryText) return null;
                     } else {
-                        // For Services, PM, Other
-                        const selectClass = typeLabel === 'Service' ? '.service-select' :
-                            (typeLabel === 'Packaging Material' ? '.packaging-material-select' :
-                                '.other-item-select');
+                        const selectClass = '.other-item-select';
                         nameText = $row.find(selectClass + ' option:selected').text() || '';
                         metaText = typeLabel;
                         pricingType = $row.attr('data-pricing-type') || 'fixed';
@@ -1546,7 +1359,6 @@
                                         </tr>
                                     `;
 
-                    // Add CGST & SGST rows for Services, PM, Other Items
                     if (typeLabel !== 'Product') {
                         rowHtml += `
                                             <tr class="preview-cgst-row">
@@ -1637,8 +1449,6 @@
                 }
 
                 processSection('#itemsTableBody', 'Products', 'Product');
-                processSection('#servicesTableBody', 'Services', 'Service');
-                processSection('#packagingMaterialsTableBody', 'Packaging Materials', 'Packaging Material');
                 processSection('#otherItemsTableBody', 'Other Items', 'Other Item');
 
                 if (count === 0) {
@@ -1679,7 +1489,6 @@
                     totalSgst += sgstAmt;
                 });
 
-                // Helper to process non-product rows (Services/PM/Other)
                 function processNonProductRow($row) {
                     const qty = parseFloat($row.find('.qty-input').val()) || 0;
                     const enteredPrice = parseFloat($row.find('.price-input').val()) || 0;
@@ -1710,16 +1519,6 @@
 
                     totalBasePrice += (totalBase + totalTax);
                 }
-
-                // Services
-                $('#servicesTableBody tr').each(function() {
-                    processNonProductRow($(this));
-                });
-
-                // Packaging Materials
-                $('#packagingMaterialsTableBody tr').each(function() {
-                    processNonProductRow($(this));
-                });
 
                 // Other Items
                 $('#otherItemsTableBody tr').each(function() {
@@ -1918,13 +1717,13 @@
                 utencilMovements.forEach(m => {
                     const pending = Math.max(0, (m.sent || 0) - (m.received || 0));
                     const row = `
-                                        <tr>
-                                            <td>${m.name}</td>
-                                            <td>${(m.sent || 0).toFixed(2)}</td>
-                                            <td>${(m.received || 0).toFixed(2)}</td>
-                                            <td>${pending.toFixed(2)}</td>
-                                        </tr>
-                                    `;
+                        <tr>
+                            <td>${m.name}</td>
+                            <td>${(m.sent || 0).toFixed(2)}</td>
+                            <td>${(m.received || 0).toFixed(2)}</td>
+                            <td>${pending.toFixed(2)}</td>
+                        </tr>
+                    `;
                     $body.append(row);
                 });
             }
@@ -2301,14 +2100,6 @@
                 $row.attr('data-cgst-percent', cgst);
                 $row.attr('data-sgst-percent', sgst);
                 calculateRowTotal($row);
-            });
-
-            $(document).on('change', '.service-select', function() {
-                fetchItemDetails($(this), 'service');
-            });
-
-            $(document).on('change', '.packaging-material-select', function() {
-                fetchItemDetails($(this), 'packaging_material');
             });
 
             $(document).on('change', '.other-item-select', function() {

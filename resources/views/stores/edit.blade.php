@@ -647,7 +647,9 @@
                             page: params.page || 1,  
                             _token: "{{ csrf_token() }}",
                             roles: currentRoles,
-                            ignoreDesignation: 1
+                            ignoreDesignation: 1,
+                            for_store_listing: 1,
+                            thistore : "{{ $store->id }}"
                         };
                     },
                     processResults: function(data, params) {

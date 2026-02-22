@@ -336,6 +336,19 @@ class UsersController extends Controller
             });
         }
 
+        if ($request->filled('for_store_listing')) {
+            if ($request->filled('thistore')) {
+                $query->where(function ($query) {
+                    $query->whereDoesntHave('stores')
+                    ->orWhereHas('stores', function ($q) {
+                        $q->where('stores.id', request('thistore'));
+                    });
+                });
+            } else {
+                $query->whereDoesntHave('stores')
+            }
+        }
+
         $data = $query->paginate($limit, ['*'], 'page', $page);
         $response = $data->map(function ($pro) {
             return [

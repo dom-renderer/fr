@@ -19,18 +19,18 @@
             </div>
 
             <div class="row">
-                <div class="col-md-4 mb-3">
+                <div class="col-md-6 mb-3">
                     <label class="form-label fw-bold">CGST (%)</label>
                     <p>{{ $taxSlab->cgst }}%</p>
                 </div>
-                <div class="col-md-4 mb-3">
+                <div class="col-md-6 mb-3">
                     <label class="form-label fw-bold">SGST (%)</label>
                     <p>{{ $taxSlab->sgst }}%</p>
                 </div>
-                <div class="col-md-4 mb-3">
+                {{-- <div class="col-md-4 mb-3">
                     <label class="form-label fw-bold">IGST (%)</label>
                     <p>{{ $taxSlab->igst }}%</p>
-                </div>
+                </div> --}}
             </div>
 
             <div class="mb-3">

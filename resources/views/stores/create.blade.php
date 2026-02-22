@@ -502,6 +502,7 @@
                             page: params.page || 1,
                             _token: "{{ csrf_token() }}",
                             roles: currentRoles,
+                            for_store_listing: 1,
                             ignoreDesignation: 1
                         };
                     },

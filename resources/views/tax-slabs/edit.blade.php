@@ -30,7 +30,7 @@
                 </div>
 
                 <div class="row">
-                    <div class="col-md-4 mb-3">
+                    <div class="col-md-6 mb-3">
                         <label for="cgst" class="form-label">CGST (%) <span class="text-danger">*</span></label>
                         <input value="{{ old('cgst', $taxSlab->cgst) }}" 
                             type="number" 
@@ -44,7 +44,7 @@
                             <span class="text-danger text-left">{{ $errors->first('cgst') }}</span>
                         @endif
                     </div>
-                    <div class="col-md-4 mb-3">
+                    <div class="col-md-6 mb-3">
                         <label for="sgst" class="form-label">SGST (%) <span class="text-danger">*</span></label>
                         <input value="{{ old('sgst', $taxSlab->sgst) }}" 
                             type="number" 
@@ -58,7 +58,7 @@
                             <span class="text-danger text-left">{{ $errors->first('sgst') }}</span>
                         @endif
                     </div>
-                    <div class="col-md-4 mb-3">
+                    {{-- <div class="col-md-4 mb-3">
                         <label for="igst" class="form-label">IGST (%) <span class="text-danger">*</span></label>
                         <input value="{{ old('igst', $taxSlab->igst) }}" 
                             type="number" 
@@ -71,7 +71,7 @@
                         @if ($errors->has('igst'))
                             <span class="text-danger text-left">{{ $errors->first('igst') }}</span>
                         @endif
-                    </div>
+                    </div> --}}
                 </div>
 
                 <div class="mb-3">
@@ -116,13 +116,13 @@
                     min: 0,
                     max: 100,
                     checkTotalTax: true
-                },
-                igst: {
-                    required: true,
-                    number: true,
-                    min: 0,
-                    max: 100
                 }
+                // igst: {
+                //     required: true,
+                //     number: true,
+                //     min: 0,
+                //     max: 100
+                // }
             },
             messages: {
                 name: "Please enter tax slab name",
@@ -137,13 +137,13 @@
                     number: "Please enter a valid number",
                     min: "Value must be greater than or equal to 0",
                     max: "Value must be less than or equal to 100"
-                },
-                igst: {
-                    required: "Please enter IGST",
-                    number: "Please enter a valid number",
-                    min: "Value must be greater than or equal to 0",
-                    max: "Value must be less than or equal to 100"
                 }
+                // igst: {
+                //     required: "Please enter IGST",
+                //     number: "Please enter a valid number",
+                //     min: "Value must be greater than or equal to 0",
+                //     max: "Value must be less than or equal to 100"
+                // }
             },
             errorElement: "span",
             errorClass: "text-danger",

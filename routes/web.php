@@ -105,8 +105,6 @@ Route::group(['middleware' => ['auth', 'permission']], function() {
 
     Route::resource('handling-instructions', \App\Http\Controllers\HandlingInstructionController::class);
     Route::resource('tax-slabs', \App\Http\Controllers\TaxSlabController::class);
-    Route::resource('packaging-materials', \App\Http\Controllers\PackagingMaterialController::class);
-    Route::resource('services', \App\Http\Controllers\ServiceController::class);
     Route::resource('other-items', \App\Http\Controllers\OtherItemController::class);
 
     Route::get('discount-management', [\App\Http\Controllers\DiscountManagementController::class, 'index'])->name('discount-management.index');

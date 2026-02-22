@@ -687,221 +687,6 @@
                         </div>
                     </div>
 
-                    {{-- Services Card --}}
-                    <div class="card border-0 shadow-sm mt-3">
-                        <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
-                            <h6 class="mb-0"><i class="fas fa-concierge-bell me-2 text-primary"></i>Services</h6>
-                            <button type="button" class="btn btn-primary btn-sm" id="addServiceRow">
-                                <i class="fas fa-plus me-1"></i> Add Service
-                            </button>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="table-responsive">
-                                <table class="table items-table mb-0">
-                                    <thead>
-                                        <tr>
-                                            <th width="25%">Service</th>
-                                            <th width="10%">Tax Incl.</th>
-                                            <th width="15%">Tax Slab</th>
-                                            <th width="12%">Price</th>
-                                            <th width="8%">Qty</th>
-                                            <th width="15%">Total</th>
-                                            <th width="5%"></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="servicesTableBody">
-                                        @foreach ($order->services as $index => $service)
-                                            @php
-                                                $srcService = $services->firstWhere('id', $service->service_id);
-                                                $srvPricingType =
-                                                    $service->pricing_type ?? ($srcService->pricing_type ?? 'fixed');
-                                                $srvPriceIncTax =
-                                                    (int) ($service->price_includes_tax ??
-                                                        ($srcService->price_includes_tax ?? 0));
-                                                $srvCgst =
-                                                    $srcService && $srcService->taxSlab
-                                                        ? (float) $srcService->taxSlab->cgst
-                                                        : 0;
-                                                $srvSgst =
-                                                    $srcService && $srcService->taxSlab
-                                                        ? (float) $srcService->taxSlab->sgst
-                                                        : 0;
-                                            @endphp
-                                            <tr data-row-index="{{ $index }}"
-                                                data-pricing-type="{{ $srvPricingType }}"
-                                                data-price-includes-tax="{{ $srvPriceIncTax }}"
-                                                data-cgst-percent="{{ $srvCgst }}"
-                                                data-sgst-percent="{{ $srvSgst }}">
-                                                <td>
-                                                    <select class="form-control select2 service-select"
-                                                        name="services[{{ $index }}][service_id]" required>
-                                                        <option value="">Select Service</option>
-                                                        @foreach ($services as $s)
-                                                            <option value="{{ $s->id }}"
-                                                                {{ $service->service_id == $s->id ? 'selected' : '' }}>
-                                                                {{ $s->name }}</option>
-                                                        @endforeach
-                                                    </select>
-                                                    <input type="hidden" class="pricing-type-input"
-                                                        name="services[{{ $index }}][pricing_type]"
-                                                        value="{{ $srvPricingType }}">
-                                                </td>
-                                                <td class="text-center align-middle">
-                                                    <input type="checkbox"
-                                                        class="form-check-input price-includes-tax-checkbox"
-                                                        name="services[{{ $index }}][price_includes_tax]"
-                                                        value="1" {{ $srvPriceIncTax ? 'checked' : '' }}>
-                                                </td>
-                                                <td>
-                                                    <select class="form-control form-select-sm tax-slab-select"
-                                                        name="services[{{ $index }}][tax_slab_id]">
-                                                        <option value="">None</option>
-                                                        @foreach ($taxSlabs as $slab)
-                                                            <option value="{{ $slab->id }}"
-                                                                {{ ($service->tax_slab_id ?? '') == $slab->id ? 'selected' : '' }}
-                                                                data-cgst="{{ $slab->cgst }}"
-                                                                data-sgst="{{ $slab->sgst }}">{{ $slab->name }}
-                                                            </option>
-                                                        @endforeach
-                                                    </select>
-                                                </td>
-                                                <td>
-                                                    <input type="number" class="form-control form-control-sm price-input"
-                                                        name="services[{{ $index }}][unit_price]"
-                                                        value="{{ $service->unit_price }}" min="0" step="0.01"
-                                                        required>
-                                                </td>
-                                                <td>
-                                                    <input type="number" class="form-control form-control-sm qty-input"
-                                                        name="services[{{ $index }}][quantity]"
-                                                        value="{{ $service->quantity }}" min="0.01" step="0.01"
-                                                        required>
-                                                </td>
-                                                <td class="row-total fw-bold text-end pe-3">
-                                                    {{ Helper::defaultCurrencySymbol() }}{{ number_format(floatval($service->unit_price) * floatval($service->quantity), 2) }}
-                                                </td>
-                                                <td class="text-center">
-                                                    <i class="fas fa-times-circle btn-remove-row" title="Remove"></i>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-                            <div id="noServicesMessage" class="text-center text-muted py-4"
-                                style="{{ $order->services->count() > 0 ? 'display: none;' : '' }}">
-                                <i class="fas fa-inbox fa-2x mb-2 opacity-50"></i><br>
-                                Click "Add Service" to add services.
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- Packaging Materials Card --}}
-                    <div class="card border-0 shadow-sm mt-3">
-                        <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
-                            <h6 class="mb-0"><i class="fas fa-box-open me-2 text-primary"></i>Packaging Materials</h6>
-                            <button type="button" class="btn btn-primary btn-sm" id="addPackagingMaterialRow">
-                                <i class="fas fa-plus me-1"></i> Add Material
-                            </button>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="table-responsive">
-                                <table class="table items-table mb-0">
-                                    <thead>
-                                        <tr>
-                                            <th width="25%">Material</th>
-                                            <th width="10%">Tax Incl.</th>
-                                            <th width="15%">Tax Slab</th>
-                                            <th width="12%">Price</th>
-                                            <th width="8%">Qty</th>
-                                            <th width="15%">Total</th>
-                                            <th width="5%"></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="packagingMaterialsTableBody">
-                                        @foreach ($order->packagingMaterials as $index => $pm)
-                                            @php
-                                                $srcPM = $packagingMaterials->firstWhere(
-                                                    'id',
-                                                    $pm->packaging_material_id,
-                                                );
-                                                $pmPricingType = $pm->pricing_type ?? ($srcPM->pricing_type ?? 'fixed');
-                                                $pmPriceIncTax =
-                                                    (int) ($pm->price_includes_tax ??
-                                                        ($srcPM->price_includes_tax ?? 0));
-                                                $pmCgst = $srcPM && $srcPM->taxSlab ? (float) $srcPM->taxSlab->cgst : 0;
-                                                $pmSgst = $srcPM && $srcPM->taxSlab ? (float) $srcPM->taxSlab->sgst : 0;
-                                            @endphp
-                                            <tr data-row-index="{{ $index }}"
-                                                data-pricing-type="{{ $pmPricingType }}"
-                                                data-price-includes-tax="{{ $pmPriceIncTax }}"
-                                                data-cgst-percent="{{ $pmCgst }}"
-                                                data-sgst-percent="{{ $pmSgst }}">
-                                                <td>
-                                                    <select class="form-control select2 packaging-material-select"
-                                                        name="packaging_materials[{{ $index }}][packaging_material_id]"
-                                                        required>
-                                                        <option value="">Select Material</option>
-                                                        @foreach ($packagingMaterials as $p)
-                                                            <option value="{{ $p->id }}"
-                                                                {{ $pm->packaging_material_id == $p->id ? 'selected' : '' }}>
-                                                                {{ $p->name }}</option>
-                                                        @endforeach
-                                                    </select>
-                                                    <input type="hidden" class="pricing-type-input"
-                                                        name="packaging_materials[{{ $index }}][pricing_type]"
-                                                        value="{{ $pmPricingType }}">
-                                                </td>
-                                                <td class="text-center align-middle">
-                                                    <input type="checkbox"
-                                                        class="form-check-input price-includes-tax-checkbox"
-                                                        name="packaging_materials[{{ $index }}][price_includes_tax]"
-                                                        value="1" {{ $pmPriceIncTax ? 'checked' : '' }}>
-                                                </td>
-                                                <td>
-                                                    <select class="form-control form-select-sm tax-slab-select"
-                                                        name="packaging_materials[{{ $index }}][tax_slab_id]">
-                                                        <option value="">None</option>
-                                                        @foreach ($taxSlabs as $slab)
-                                                            <option value="{{ $slab->id }}"
-                                                                {{ ($pm->tax_slab_id ?? '') == $slab->id ? 'selected' : '' }}
-                                                                data-cgst="{{ $slab->cgst }}"
-                                                                data-sgst="{{ $slab->sgst }}">{{ $slab->name }}
-                                                            </option>
-                                                        @endforeach
-                                                    </select>
-                                                </td>
-                                                <td>
-                                                    <input type="number" class="form-control form-control-sm price-input"
-                                                        name="packaging_materials[{{ $index }}][unit_price]"
-                                                        value="{{ $pm->unit_price }}" min="0" step="0.01"
-                                                        required>
-                                                </td>
-                                                <td>
-                                                    <input type="number" class="form-control form-control-sm qty-input"
-                                                        name="packaging_materials[{{ $index }}][quantity]"
-                                                        value="{{ $pm->quantity }}" min="0.01" step="0.01"
-                                                        required>
-                                                </td>
-                                                <td class="row-total fw-bold text-end pe-3">
-                                                    {{ Helper::defaultCurrencySymbol() }}{{ number_format(floatval($pm->unit_price) * floatval($pm->quantity), 2) }}
-                                                </td>
-                                                <td class="text-center">
-                                                    <i class="fas fa-times-circle btn-remove-row" title="Remove"></i>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-                            <div id="noPackagingMaterialsMessage" class="text-center text-muted py-4"
-                                style="{{ $order->packagingMaterials->count() > 0 ? 'display: none;' : '' }}">
-                                <i class="fas fa-inbox fa-2x mb-2 opacity-50"></i><br>
-                                Click "Add Material" to add packaging materials.
-                            </div>
-                        </div>
-                    </div>
-
                     {{-- Other Items Card --}}
                     <div class="card border-0 shadow-sm mt-3">
                         <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
@@ -2047,10 +1832,7 @@
                         metaText = `${categoryText} &bull; ${unitText}`;
                         if (!productText && !categoryText) return null;
                     } else {
-                        // For Services, PM, Other
-                        const selectClass = typeLabel === 'Service' ? '.service-select' :
-                            (typeLabel === 'Packaging Material' ? '.packaging-material-select' :
-                                '.other-item-select');
+                        const selectClass = '.other-item-select';
                         nameText = $row.find(selectClass + ' option:selected').text() || '';
                         metaText = typeLabel;
                         if (!nameText || nameText === 'Select ' + typeLabel.replace('Packaging Material',
@@ -2130,7 +1912,6 @@
                         </tr>
                     `;
 
-                    // Add CGST & SGST rows for Services, PM, Other Items
                     if (typeLabel !== 'Product') {
                         rowHtml += `
                             <tr class="preview-cgst-row">
@@ -2214,8 +1995,6 @@
                 }
 
                 processSection('#itemsTableBody', 'Products', 'Product');
-                processSection('#servicesTableBody', 'Services', 'Service');
-                processSection('#packagingMaterialsTableBody', 'Packaging Materials', 'Packaging Material');
                 processSection('#otherItemsTableBody', 'Other Items', 'Other Item');
 
                 if (totalCount === 0) {
@@ -2253,7 +2032,6 @@
                     totalSgst += sgstAmt;
                 });
 
-                // Helper to process non-product rows (Services/PM/Other)
                 function processNonProductRow($row) {
                     const qty = parseFloat($row.find('.qty-input').val()) || 0;
                     const enteredPrice = parseFloat($row.find('.price-input').val()) || 0;
@@ -2283,16 +2061,6 @@
                     
                     totalBasePrice += (totalBase + totalTax);
                 }
-
-                // Services
-                $('#servicesTableBody tr').each(function() {
-                    processNonProductRow($(this));
-                });
-
-                // Packaging Materials
-                $('#packagingMaterialsTableBody tr').each(function() {
-                    processNonProductRow($(this));
-                });
 
                 // Other Items
                 $('#otherItemsTableBody tr').each(function() {
@@ -2325,8 +2093,6 @@
 
                 let totalItems = 0;
                 totalItems += $('#itemsTableBody tr').length;
-                totalItems += $('#servicesTableBody tr').length;
-                totalItems += $('#packagingMaterialsTableBody tr').length;
                 totalItems += $('#otherItemsTableBody tr').length;
 
                 $('#totalItemsCount').text(totalItems);
@@ -2891,82 +2657,7 @@
             });
             // --- New Sections JS ---
 
-            let serviceIndex = {{ $order->services->count() + 1 }};
-            let packagingIndex = {{ $order->packagingMaterials->count() + 1 }};
             let otherIndex = {{ $order->otherItems->count() + 1 }};
-
-            // Templates
-            const serviceRowTemplate = `
-                <tr data-row-index="__INDEX__" data-pricing-type="fixed">
-                    <td>
-                        <select class="form-control select2 service-select" name="services[__INDEX__][service_id]" required>
-                            <option value="">Select Service</option>
-                            @foreach ($services as $s)
-                                <option value="{{ $s->id }}">{{ $s->name }}</option>
-                            @endforeach
-                        </select>
-                        <input type="hidden" class="pricing-type-input" name="services[__INDEX__][pricing_type]" value="fixed">
-                    </td>
-                    <td class="text-center align-middle">
-                        <input type="checkbox" class="form-check-input price-includes-tax-checkbox"
-                            name="services[__INDEX__][price_includes_tax]" value="1">
-                    </td>
-                    <td>
-                        <select class="form-control form-select-sm tax-slab-select" name="services[__INDEX__][tax_slab_id]">
-                            <option value="">None</option>
-                            @foreach ($taxSlabs as $slab)
-                                <option value="{{ $slab->id }}" data-cgst="{{ $slab->cgst }}" data-sgst="{{ $slab->sgst }}">{{ $slab->name }}</option>
-                            @endforeach
-                        </select>
-                    </td>
-                    <td>
-                        <input type="number" class="form-control form-control-sm price-input" name="services[__INDEX__][unit_price]" value="0" min="0" step="0.01" required>
-                    </td>
-                    <td>
-                        <input type="number" class="form-control form-control-sm qty-input" name="services[__INDEX__][quantity]" value="1" min="0.01" step="0.01" required>
-                    </td>
-                    <td class="row-total fw-bold text-end pe-3">{{ Helper::defaultCurrencySymbol() }}0.00</td>
-                    <td class="text-center">
-                        <i class="fas fa-times-circle btn-remove-row" title="Remove"></i>
-                    </td>
-                </tr>
-            `;
-
-            const packagingRowTemplate = `
-                <tr data-row-index="__INDEX__" data-pricing-type="fixed">
-                    <td>
-                        <select class="form-control select2 packaging-material-select" name="packaging_materials[__INDEX__][packaging_material_id]" required>
-                            <option value="">Select Material</option>
-                            @foreach ($packagingMaterials as $p)
-                                <option value="{{ $p->id }}">{{ $p->name }}</option>
-                            @endforeach
-                        </select>
-                        <input type="hidden" class="pricing-type-input" name="packaging_materials[__INDEX__][pricing_type]" value="fixed">
-                    </td>
-                    <td class="text-center align-middle">
-                        <input type="checkbox" class="form-check-input price-includes-tax-checkbox"
-                            name="packaging_materials[__INDEX__][price_includes_tax]" value="1">
-                    </td>
-                    <td>
-                        <select class="form-control form-select-sm tax-slab-select" name="packaging_materials[__INDEX__][tax_slab_id]">
-                            <option value="">None</option>
-                            @foreach ($taxSlabs as $slab)
-                                <option value="{{ $slab->id }}" data-cgst="{{ $slab->cgst }}" data-sgst="{{ $slab->sgst }}">{{ $slab->name }}</option>
-                            @endforeach
-                        </select>
-                    </td>
-                    <td>
-                        <input type="number" class="form-control form-control-sm price-input" name="packaging_materials[__INDEX__][unit_price]" value="0" min="0" step="0.01" required>
-                    </td>
-                    <td>
-                        <input type="number" class="form-control form-control-sm qty-input" name="packaging_materials[__INDEX__][quantity]" value="1" min="0.01" step="0.01" required>
-                    </td>
-                    <td class="row-total fw-bold text-end pe-3">{{ Helper::defaultCurrencySymbol() }}0.00</td>
-                    <td class="text-center">
-                        <i class="fas fa-times-circle btn-remove-row" title="Remove"></i>
-                    </td>
-                </tr>
-            `;
 
             const otherItemRowTemplate = `
                 <tr data-row-index="__INDEX__" data-pricing-type="fixed">
@@ -3004,24 +2695,6 @@
                 </tr>
             `;
 
-            // Add Row Handlers
-            $('#addServiceRow').on('click', function() {
-                $('#servicesTableBody').append(serviceRowTemplate.replace(/__INDEX__/g, serviceIndex++));
-                $('#servicesTableBody tr:last .select2').select2({
-                    width: '100%'
-                });
-                $('#noServicesMessage').hide();
-            });
-
-            $('#addPackagingMaterialRow').on('click', function() {
-                $('#packagingMaterialsTableBody').append(packagingRowTemplate.replace(/__INDEX__/g,
-                    packagingIndex++));
-                $('#packagingMaterialsTableBody tr:last .select2').select2({
-                    width: '100%'
-                });
-                $('#noPackagingMaterialsMessage').hide();
-            });
-
             $('#addOtherItemRow').on('click', function() {
                 $('#otherItemsTableBody').append(otherItemRowTemplate.replace(/__INDEX__/g, otherIndex++));
                 $('#otherItemsTableBody tr:last .select2').select2({
@@ -3036,10 +2709,6 @@
                 const $tbody = $row.closest('tbody');
                 $row.remove();
 
-                if ($tbody.attr('id') === 'servicesTableBody' && $tbody.children().length === 0) $(
-                    '#noServicesMessage').show();
-                if ($tbody.attr('id') === 'packagingMaterialsTableBody' && $tbody.children().length === 0)
-                    $('#noPackagingMaterialsMessage').show();
                 if ($tbody.attr('id') === 'otherItemsTableBody' && $tbody.children().length === 0) $(
                     '#noOtherItemsMessage').show();
 
@@ -3107,13 +2776,7 @@
                 $row.attr('data-sgst-percent', sgst);
                 calculateRowTotal($row);
             });
-
-            $(document).on('change', '.service-select', function() {
-                fetchItemDetails($(this), 'service');
-            });
-            $(document).on('change', '.packaging-material-select', function() {
-                fetchItemDetails($(this), 'packaging_material');
-            });
+            
             $(document).on('change', '.other-item-select', function() {
                 fetchItemDetails($(this), 'other_item');
             });
